@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Recurring Payment Orchestration · Srujana Patil</title>
+<meta name="description" content="Case study: a shared recurring-payment scheduling system running 50,000+ schedules, with idempotent payment creation and automated retries that recovered 30% of failed payments.">
+<link rel="canonical" href="https://srujanapatiil.github.io/work/recurring-payments.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Recurring Payment Orchestration · Srujana Patil">
+<meta property="og:description" content="Shared scheduling, idempotent payments and automated retries for 50,000+ recurring payment schedules.">
+<meta property="og:image" content="https://srujanapatiil.github.io/assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#06080E">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script>document.documentElement.classList.add('js')</script>
+<script src="../assets/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">S<i>P</i></span><span class="brand-name">Srujana Patil</span><span class="visually-hidden">Srujana Patil, home</span></a>
+    <nav aria-label="Primary">
+      <ul class="nav-list">
+        <li><a href="../#about">About</a></li>
+        <li><a href="../#work" aria-current="page">Work</a></li>
+        <li><a href="../#skills">Skills</a></li>
+        <li><a href="../#experience">Experience</a></li>
+        <li><a href="../#approach">Approach</a></li>
+        <li><a href="../#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn menu-btn" id="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile" hidden>
+    <div class="wrap"><ul><li><a href="../#about">About</a></li><li><a href="../#work">Work</a></li><li><a href="../#skills">Skills</a></li><li><a href="../#experience">Experience</a></li><li><a href="../#approach">Approach</a></li><li><a href="../#contact">Contact</a></li></ul></div>
+  </nav>
+</header>
+
+<main id="main">
+  <header class="cs-hero">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span aria-hidden="true">/</span><a href="../#work">Work</a><span aria-hidden="true">/</span><span aria-current="page">Case study 1 of 3</span></nav>
+      <p class="kicker">Case study · Payments</p>
+      <h1>Recurring payment orchestration</h1>
+      <p class="summary">A shared scheduling system for recurring payments: daily, weekly, monthly and seasonal schedules with pauses, cancellations, payment-method changes and automated retries, built on AWS.</p>
+      <dl class="cs-meta">
+        <div><dt>Organisation</dt><dd>The Shamaazi Project Ltd, UK fintech</dd></div>
+        <div><dt>Period</dt><dd>2023 – present</dd></div>
+        <div><dt>My role</dt><dd>Architect and engineer of the scheduling and retry services</dd></div>
+        <div><dt>Scale</dt><dd>50,000+ active schedules</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <div class="wrap cs-layout">
+    <aside class="toc" aria-label="On this page">
+      <p class="label">On this page</p>
+      <ol>
+        <li><a href="#context">Context and problem</a></li>
+        <li><a href="#constraints">Constraints</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#contribution">My contribution</a></li>
+        <li><a href="#decisions">Key decisions</a></li>
+        <li><a href="#implementation">Implementation</a></li>
+        <li><a href="#quality">Testing and reliability</a></li>
+        <li><a href="#outcomes">Outcomes</a></li>
+      </ol>
+    </aside>
+
+    <div class="cs-body">
+      <section class="cs-section" id="context">
+        <h2><span class="n">01</span>Business context and problem</h2>
+        <p>Customers set up recurring payments that run on their own schedule: every day, every week, once a month, or every night through a fixed season. Several subscription products needed this, and each schedule had to keep working as customers paused, cancelled or changed their card.</p>
+        <p>The goal was <strong>one shared scheduling system</strong> that every product could rely on, rather than each product handling its own schedule logic.</p>
+        <span class="tbc">What existed before the shared system (separate per-product logic, a legacy service?), and what problems that caused.</span>
+      </section>
+
+      <section class="cs-section" id="constraints">
+        <h2><span class="n">02</span>Engineering constraints and technical challenge</h2>
+        <ul>
+          <li><strong>Money moves.</strong> A duplicate charge is a customer-facing incident, so every step must be safe to repeat.</li>
+          <li><strong>Load arrives in peaks.</strong> The busiest nights reach 50K+ payments, concentrated into a short window.</li>
+          <li><strong>Schedules change mid-cycle.</strong> Pauses, cancellations and payment-method changes can happen at any time, including during a run.</li>
+          <li><strong>Several products, one system.</strong> Frequencies and rules differ by product, but the engine must stay shared.</li>
+          <li><strong>Two stacks live at once.</strong> Services were moving to TypeScript during this period, so contracts had to stay stable.</li>
+        </ul>
+      </section>
+
+      <section class="cs-section" id="architecture">
+        <h2><span class="n">03</span>Architecture</h2>
+        <p>A sanitised view of the main components and how a payment flows through them.</p>
+        <figure class="diagram">
+          <div class="diagram-scroll" tabindex="0" role="region" aria-label="Architecture diagram, scrollable">
+            <svg viewBox="0 0 880 340" role="img" aria-labelledby="d1-title d1-desc">
+              <title id="d1-title">Recurring payment architecture, illustrative</title>
+              <desc id="d1-desc">The customer app calls the schedules API, which stores schedules in PostgreSQL. A scheduler reads due schedules and places each payment on a queue. A payment service takes payments from the queue and creates them with Stripe. Stripe sends webhook events to a result handler. Failed payments go to a retry workflow, which re-queues eligible payments and sends customer notifications.</desc>
+              <defs>
+                <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0 10 5 0 10z"/></marker>
+                <marker id="a1h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow hot" d="M0 0 10 5 0 10z"/></marker>
+                <marker id="a1r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow retry" d="M0 0 10 5 0 10z"/></marker>
+              </defs>
+              <g class="d-node key"><rect x="20" y="30" width="170" height="58" rx="10"/><text x="36" y="55">Schedules</text><text class="sub" x="36" y="74">PostgreSQL</text></g>
+              <g class="d-node"><rect x="240" y="30" width="170" height="58" rx="10"/><text x="256" y="55">Schedules API</text><text class="sub" x="256" y="74">TypeScript</text></g>
+              <g class="d-node"><rect x="460" y="30" width="170" height="58" rx="10"/><text x="476" y="55">Customer app</text><text class="sub" x="476" y="74">React Router</text></g>
+
+              <g class="d-node key"><rect x="20" y="140" width="170" height="58" rx="10"/><text x="36" y="165">Scheduler</text><text class="sub" x="36" y="184">EventBridge · service</text></g>
+              <g class="d-node"><rect x="240" y="140" width="170" height="58" rx="10"/><text x="256" y="165">Queue</text><text class="sub" x="256" y="184">SQS</text></g>
+              <g class="d-node key"><rect x="460" y="140" width="170" height="58" rx="10"/><text x="476" y="165">Payment service</text><text class="sub" x="476" y="184">idempotent</text></g>
+              <g class="d-node ext"><rect x="690" y="140" width="170" height="58" rx="10"/><text x="706" y="165">Stripe</text><text class="sub" x="706" y="184">external provider</text></g>
+
+              <g class="d-node"><rect x="20" y="250" width="170" height="58" rx="10"/><text x="36" y="275">Notifications</text><text class="sub" x="36" y="294">emails · events</text></g>
+              <g class="d-node key"><rect x="240" y="250" width="170" height="58" rx="10"/><text x="256" y="275">Retry workflow</text><text class="sub" x="256" y="294">capped · tracked</text></g>
+              <g class="d-node"><rect x="460" y="250" width="170" height="58" rx="10"/><text x="476" y="275">Result handler</text><text class="sub" x="476" y="294">webhooks · Lambda</text></g>
+
+              <path class="d-edge" d="M460 59H410" marker-end="url(#a1)"/>
+              <path class="d-edge" d="M240 59H190" marker-end="url(#a1)"/>
+              <path class="d-edge" d="M105 88V140" marker-end="url(#a1)"/><text class="d-label" x="112" y="118">due today</text>
+              <path class="d-edge hot" d="M190 169H240" marker-end="url(#a1h)"/>
+              <path class="d-edge hot" d="M410 169H460" marker-end="url(#a1h)"/>
+              <path class="d-edge hot" d="M630 169H690" marker-end="url(#a1h)"/>
+              <path class="d-edge hot" d="M775 198V279H630" marker-end="url(#a1h)"/><text class="d-label" x="690" y="270">webhook</text>
+              <path class="d-edge retry" d="M460 279H410" marker-end="url(#a1r)"/><text class="d-label" x="418" y="242">failed</text>
+              <path class="d-edge retry" d="M325 250V198" marker-end="url(#a1r)"/><text class="d-label" x="332" y="228">re-queue</text>
+              <path class="d-edge" d="M240 279H190" marker-end="url(#a1)"/>
+            </svg>
+          </div>
+          <figcaption><span class="illustrative">Illustrative · sanitised</span><span>Teal: payment path · amber dashed: retries · dashed outline: external</span></figcaption>
+        </figure>
+      </section>
+
+      <section class="cs-section" id="contribution">
+        <h2><span class="n">04</span>Individual contribution and collaboration</h2>
+        <div class="cols">
+          <div class="panel">
+            <h3>What I did</h3>
+            <ul>
+              <li>Architected the shared scheduling system as a set of backend microservices.</li>
+              <li>Built the payment-retry services for three subscription products, including failure tracking and automatic cancellation after the final retry.</li>
+              <li>Integrated the full Stripe lifecycle: Payment Intents, subscriptions, webhooks, refunds, fees and automatic card updates.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Who I worked with</h3>
+            <ul>
+              <li>Product and Design, to turn requirements into schedule rules and customer flows.</li>
+              <li>Other engineers on the team, through design reviews, pairing and code review.</li>
+            </ul>
+            <p>I worked in a small team of 2–4 engineers.</p>
+            <span class="tbc">Which parts the other engineers owned.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="cs-section" id="decisions">
+        <h2><span class="n">05</span>Key decisions and rejected alternatives</h2>
+        <div class="decision">
+          <div class="chosen"><span class="label ok">Chosen</span><p><strong>One shared scheduling engine</strong> used by every product, with product-specific rules as configuration.</p></div>
+          <div><span class="label no">Rejected</span><p>Separate scheduling logic in each product. <span class="tbc">Why it was rejected (duplicated bugs, inconsistent behaviour, cost to change?).</span></p></div>
+        </div>
+        <div class="decision">
+          <div class="chosen"><span class="label ok">Chosen</span><p><strong>Idempotent payment creation</strong>, keyed on schedule and due date, so repeating a run or a request cannot create a second charge.</p></div>
+          <div><span class="label no">Rejected</span><p>Relying on the run executing exactly once. <span class="tbc">Confirm this matches how duplicates were prevented in practice.</span></p></div>
+        </div>
+        <div class="decision">
+          <div class="chosen"><span class="label ok">Chosen</span><p><strong>Capped, automatic retries with cancellation after the final attempt</strong>, so failed schedules don't retry forever.</p></div>
+          <div><span class="label no">Rejected</span><p>Manual follow-up of every failed payment. <span class="tbc">The retry spacing and cap you used, if you're happy to share them.</span></p></div>
+        </div>
+      </section>
+
+      <section class="cs-section" id="implementation">
+        <h2><span class="n">06</span>Implementation highlights</h2>
+        <ul>
+          <li><strong>Frequencies:</strong> daily, weekly, monthly and seasonal schedules from a single model.</li>
+          <li><strong>Lifecycle changes:</strong> pauses, cancellations and payment-method changes handled without breaking the next run.</li>
+          <li><strong>Card updates:</strong> Stripe's automatic card updates removed manual payment-method changes for customers.</li>
+          <li><strong>Retries:</strong> failure tracking per payment and automatic cancellation after the final retry.</li>
+        </ul>
+        <figure class="code">
+          <figcaption><span>Idempotent payment creation in TypeScript</span><span class="illustrative">Illustrative · written for this page</span></figcaption>
+<pre tabindex="0" aria-label="Code example"><code><span class="c">// The key is derived from the schedule and its due date, so a repeated
+// request for the same payment returns the original PaymentIntent.</span>
+<span class="k">const</span> idempotencyKey = (scheduleId: <span class="k">string</span>, due: <span class="k">string</span>) =&gt;
+  <span class="s">`schedule:${scheduleId}:due:${due}`</span>;
+
+<span class="k">const</span> intent = <span class="k">await</span> stripe.paymentIntents.create(
+  { amount: amountPence, currency: <span class="s">"gbp"</span>, customer: customerId },
+  { idempotencyKey: idempotencyKey(scheduleId, dueDate) },
+);</code></pre>
+        </figure>
+      </section>
+
+      <section class="cs-section" id="quality">
+        <h2><span class="n">07</span>Testing, observability, security and reliability</h2>
+        <div class="cols">
+          <div class="panel"><h3>Testing</h3><p>Unit tests with mocks for payment calculations; integration and API tests in CI; Playwright end-to-end tests for critical customer journeys.</p></div>
+          <div class="panel"><h3>Reliability</h3><p>Idempotent payment creation, de-duplicated webhook handling, state that only moves forward, and capped retries.</p></div>
+          <div class="panel"><h3>Observability</h3><p>Self-serve reporting on payment runs through a DynamoDB-to-Athena pipeline with Metabase dashboards.</p><span class="tbc">Alerting and logging you used (for example CloudWatch alarms on failed runs).</span></div>
+          <div class="panel"><h3>Security</h3><p>Card details stay with Stripe; services work with Stripe identifiers.</p><span class="tbc">Confirm, and add webhook signature verification and secret handling if accurate.</span></div>
+        </div>
+      </section>
+
+      <section class="cs-section" id="outcomes">
+        <h2><span class="n">08</span>Outcomes</h2>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Outcomes table, scrollable">
+          <table class="outcomes">
+            <thead><tr><th scope="col">Result</th><th scope="col">What it measures</th><th scope="col">Attribution</th></tr></thead>
+            <tbody>
+              <tr><td>50,000+</td><td>Active recurring payment schedules on the shared system</td><td>System I architected; delivered with the team</td></tr>
+              <tr><td>30%</td><td>Failed payments recovered by automated retries, across three subscription products</td><td>Retry services I built</td></tr>
+              <tr><td>Removed</td><td>Manual payment-method changes for customers whose cards were renewed, through automatic card updates</td><td>Stripe integration I built</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Caveats:</strong> figures are from production at the time of writing and cover the whole system, not my work alone.</p>
+        <h3 class="label" style="margin-top: 8px">Technology</h3>
+        <ul class="chip-list"><li class="chip">TypeScript</li><li class="chip">PostgreSQL</li><li class="chip">Stripe</li><li class="chip">AWS Lambda</li><li class="chip">SQS</li><li class="chip">EventBridge</li><li class="chip">React</li><li class="chip">React Router</li></ul>
+      </section>
+    </div>
+  </div>
+
+  <nav class="cs-next" aria-label="More case studies">
+    <div class="wrap">
+      <a class="next-card" href="../#work"><span class="label">← Back</span><b>All work</b></a>
+      <a class="next-card right" href="cloud-infrastructure.html"><span class="label">Next case study →</span><b>Cloud-native payment infrastructure</b></a>
+    </div>
+  </nav>
+</main>
+
+<footer class="site-footer"><div class="wrap"><span>© 2026 Srujana Patil Gowdara Suresh</span><a href="../">Home</a></div></footer>
+</body>
+</html>

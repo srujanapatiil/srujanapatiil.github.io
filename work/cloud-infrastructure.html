@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cloud-Native Payment Infrastructure · Srujana Patil</title>
+<meta name="description" content="Case study: event-driven serverless payment APIs on AWS (Lambda, API Gateway, SQS, SNS, EventBridge) provisioned with Terraform, sustaining 50K+ transactions at nightly peaks, plus a phased migration of live services to TypeScript.">
+<link rel="canonical" href="https://srujanapatiil.github.io/work/cloud-infrastructure.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cloud-Native Payment Infrastructure · Srujana Patil">
+<meta property="og:description" content="Serverless, event-driven payment APIs on AWS sustaining 50K+ transactions at nightly peaks.">
+<meta property="og:image" content="https://srujanapatiil.github.io/assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#06080E">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script>document.documentElement.classList.add('js')</script>
+<script src="../assets/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">S<i>P</i></span><span class="brand-name">Srujana Patil</span><span class="visually-hidden">Srujana Patil, home</span></a>
+    <nav aria-label="Primary">
+      <ul class="nav-list">
+        <li><a href="../#about">About</a></li>
+        <li><a href="../#work" aria-current="page">Work</a></li>
+        <li><a href="../#skills">Skills</a></li>
+        <li><a href="../#experience">Experience</a></li>
+        <li><a href="../#approach">Approach</a></li>
+        <li><a href="../#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn menu-btn" id="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile" hidden>
+    <div class="wrap"><ul><li><a href="../#about">About</a></li><li><a href="../#work">Work</a></li><li><a href="../#skills">Skills</a></li><li><a href="../#experience">Experience</a></li><li><a href="../#approach">Approach</a></li><li><a href="../#contact">Contact</a></li></ul></div>
+  </nav>
+</header>
+
+<main id="main">
+  <header class="cs-hero">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span aria-hidden="true">/</span><a href="../#work">Work</a><span aria-hidden="true">/</span><span aria-current="page">Case study 2 of 3</span></nav>
+      <p class="kicker">Case study · Cloud</p>
+      <h1>Cloud-native payment infrastructure</h1>
+      <p class="summary">Event-driven, serverless payment APIs on AWS, defined as code with Terraform and shipped through GitHub Actions, plus a phased migration of services to TypeScript with the old and new stacks live throughout.</p>
+      <dl class="cs-meta">
+        <div><dt>Organisation</dt><dd>The Shamaazi Project Ltd, UK fintech</dd></div>
+        <div><dt>Period</dt><dd>2023 – present</dd></div>
+        <div><dt>My role</dt><dd>Engineer on the serverless platform; led the migration to TypeScript</dd></div>
+        <div><dt>Scale</dt><dd>50K+ transactions at nightly peaks</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <div class="wrap cs-layout">
+    <aside class="toc" aria-label="On this page">
+      <p class="label">On this page</p>
+      <ol>
+        <li><a href="#context">Context and problem</a></li>
+        <li><a href="#constraints">Constraints</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#contribution">My contribution</a></li>
+        <li><a href="#decisions">Key decisions</a></li>
+        <li><a href="#implementation">Implementation</a></li>
+        <li><a href="#quality">Operations and reliability</a></li>
+        <li><a href="#outcomes">Outcomes</a></li>
+      </ol>
+    </aside>
+
+    <div class="cs-body">
+      <section class="cs-section" id="context">
+        <h2><span class="n">01</span>Business context and problem</h2>
+        <p>Payment traffic is uneven. Most of the day is quiet; the busiest nights bring 50K+ subscription payments in a short window. The platform had to absorb those peaks without paying for idle capacity the rest of the time, and let the team change infrastructure safely.</p>
+        <p>At the same time, services were moving to TypeScript (Bun and Elysia). That migration could not interrupt live payments.</p>
+      </section>
+
+      <section class="cs-section" id="constraints">
+        <h2><span class="n">02</span>Engineering constraints and technical challenge</h2>
+        <ul>
+          <li><strong>Peaky load:</strong> capacity has to scale up for nightly runs and back down afterwards.</li>
+          <li><strong>Reproducible infrastructure:</strong> every environment defined in Terraform and changed through review.</li>
+          <li><strong>No downtime for migration:</strong> old and new services had to run side by side behind the same contracts.</li>
+          <li><strong>Visibility for non-engineers:</strong> payment-run data needed to be queryable without asking a developer.</li>
+        </ul>
+      </section>
+
+      <section class="cs-section" id="architecture">
+        <h2><span class="n">03</span>Architecture</h2>
+        <p>A sanitised view of the AWS building blocks and how they connect.</p>
+        <figure class="diagram">
+          <div class="diagram-scroll" tabindex="0" role="region" aria-label="Architecture diagram, scrollable">
+            <svg viewBox="0 0 900 380" role="img" aria-labelledby="d2-title d2-desc">
+              <title id="d2-title">Serverless payment infrastructure on AWS, illustrative</title>
+              <desc id="d2-desc">GitHub Actions runs Terraform, which provisions the AWS resources. Inside AWS, API Gateway routes requests to Lambda services that use PostgreSQL. An EventBridge schedule places work on an SQS queue, consumed by Lambda workers. Workers publish events through SNS. A data pipeline moves data from DynamoDB into Athena for Metabase reports.</desc>
+              <defs>
+                <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0 10 5 0 10z"/></marker>
+                <marker id="a2h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow hot" d="M0 0 10 5 0 10z"/></marker>
+              </defs>
+              <g class="d-node"><rect x="20" y="40" width="160" height="56" rx="10"/><text x="36" y="64">GitHub Actions</text><text class="sub" x="36" y="82">CI/CD</text></g>
+              <g class="d-node"><rect x="20" y="160" width="160" height="56" rx="10"/><text x="36" y="184">Terraform</text><text class="sub" x="36" y="202">infrastructure as code</text></g>
+              <path class="d-edge" d="M100 96V160" marker-end="url(#a2)"/><text class="d-label" x="108" y="132">plan · apply</text>
+              <path class="d-edge" d="M180 188H226" marker-end="url(#a2)"/>
+
+              <rect class="d-zone" x="226" y="16" width="660" height="350" rx="14"/>
+              <text class="d-zone-label" x="244" y="38">AWS · ILLUSTRATIVE</text>
+
+              <g class="d-node"><rect x="250" y="56" width="160" height="56" rx="10"/><text x="266" y="80">API Gateway</text><text class="sub" x="266" y="98">HTTP + webhooks</text></g>
+              <g class="d-node key"><rect x="470" y="56" width="160" height="56" rx="10"/><text x="486" y="80">Lambda services</text><text class="sub" x="486" y="98">TypeScript · Node.js</text></g>
+              <g class="d-node"><rect x="690" y="56" width="170" height="56" rx="10"/><text x="706" y="80">PostgreSQL</text><text class="sub" x="706" y="98">primary data</text></g>
+
+              <g class="d-node"><rect x="250" y="166" width="160" height="56" rx="10"/><text x="266" y="190">EventBridge</text><text class="sub" x="266" y="208">schedules · events</text></g>
+              <g class="d-node key"><rect x="470" y="166" width="160" height="56" rx="10"/><text x="486" y="190">SQS</text><text class="sub" x="486" y="208">buffers peak load</text></g>
+              <g class="d-node key"><rect x="690" y="166" width="170" height="56" rx="10"/><text x="706" y="190">Lambda workers</text><text class="sub" x="706" y="208">scale with queue</text></g>
+
+              <g class="d-node"><rect x="250" y="286" width="160" height="56" rx="10"/><text x="266" y="310">SNS</text><text class="sub" x="266" y="328">fan-out events</text></g>
+              <g class="d-node"><rect x="470" y="286" width="160" height="56" rx="10"/><text x="486" y="310">DynamoDB</text><text class="sub" x="486" y="328">payment-run data</text></g>
+              <g class="d-node"><rect x="690" y="286" width="170" height="56" rx="10"/><text x="706" y="310">Athena</text><text class="sub" x="706" y="328">Metabase reports</text></g>
+
+              <path class="d-edge hot" d="M410 84H470" marker-end="url(#a2h)"/>
+              <path class="d-edge" d="M630 84H690" marker-end="url(#a2)"/>
+              <path class="d-edge hot" d="M410 194H470" marker-end="url(#a2h)"/>
+              <path class="d-edge hot" d="M630 194H690" marker-end="url(#a2h)"/>
+              <path class="d-edge" d="M775 166V112" marker-end="url(#a2)"/>
+              <path class="d-edge" d="M775 222V252H330V286" marker-end="url(#a2)"/><text class="d-label" x="520" y="246">events</text>
+              <path class="d-edge" d="M630 314H690" marker-end="url(#a2)"/><text class="d-label" x="638" y="306">pipeline</text>
+            </svg>
+          </div>
+          <figcaption><span class="illustrative">Illustrative · sanitised</span><span>Teal: request and payment paths</span></figcaption>
+        </figure>
+      </section>
+
+      <section class="cs-section" id="contribution">
+        <h2><span class="n">04</span>Individual contribution and collaboration</h2>
+        <div class="cols">
+          <div class="panel">
+            <h3>What I did</h3>
+            <ul>
+              <li>Built and ran backend services in production, from REST APIs to event-driven Lambda functions.</li>
+              <li>Led the phased migration of live services to TypeScript (Bun, Elysia), keeping the old and new stacks live.</li>
+              <li>Created the data pipeline from DynamoDB to Athena that made payment-run reporting self-serve.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Team boundaries</h3>
+            <p>The serverless platform is shared by a small team of 2–4 engineers; the outcome figures below describe the platform, not my work alone.</p>
+            <span class="tbc">Which parts of the Terraform and CI/CD setup you wrote or owned.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="cs-section" id="decisions">
+        <h2><span class="n">05</span>Key decisions and rejected alternatives</h2>
+        <div class="decision">
+          <div class="chosen"><span class="label ok">Chosen</span><p><strong>Serverless functions behind queues</strong>, so capacity follows the nightly peak and a backlog waits safely in SQS.</p></div>
+          <div><span class="label no">Rejected</span><p>Always-on servers sized for the peak. <span class="tbc">Confirm this was the trade-off, and any cost or operational reasons.</span></p></div>
+        </div>
+        <div class="decision">
+          <div class="chosen"><span class="label ok">Chosen</span><p><strong>A phased runtime migration</strong>, moving one service at a time behind its existing contract, with the old and new stacks running side by side.</p></div>
+          <div><span class="label no">Rejected</span><p>A single "big bang" rewrite and switch-over, which would put every payment path at risk at once.</p></div>
+        </div>
+        <div class="decision">
+          <div class="chosen"><span class="label ok">Chosen</span><p><strong>Athena over exported data</strong> for analytics, queried through Metabase, so reporting never touches the production database.</p></div>
+          <div><span class="label no">Rejected</span><p>Ad-hoc queries against production. <span class="tbc">Confirm the reason (load on production, access control, or both).</span></p></div>
+        </div>
+      </section>
+
+      <section class="cs-section" id="implementation">
+        <h2><span class="n">06</span>Implementation highlights</h2>
+        <ul>
+          <li><strong>APIs:</strong> REST endpoints and Stripe webhooks through API Gateway into Lambda.</li>
+          <li><strong>Messaging:</strong> SQS for work queues, SNS and EventBridge for events and schedules.</li>
+          <li><strong>Infrastructure as code:</strong> resources defined in Terraform and deployed through GitHub Actions CI/CD.</li>
+          <li><strong>Migration:</strong> new TypeScript services on Bun and Elysia, introduced alongside the services they replace.</li>
+          <li><strong>Analytics:</strong> a data pipeline from DynamoDB to Athena, with Metabase reports on top.</li>
+        </ul>
+      </section>
+
+      <section class="cs-section" id="quality">
+        <h2><span class="n">07</span>Operations, monitoring and reliability</h2>
+        <div class="cols">
+          <div class="panel"><h3>Resilience</h3><p>Queues absorb bursts and retry failed messages individually; consumers are written to tolerate duplicate delivery.</p></div>
+          <div class="panel"><h3>Deployment</h3><p>Infrastructure and application changes go through review and CI/CD rather than manual console changes.</p></div>
+          <div class="panel"><h3>Monitoring</h3><p>CloudWatch for logs and metrics; Metabase for business-level views of each payment run.</p><span class="tbc">Specific alarms or dashboards you set up.</span></div>
+          <div class="panel"><h3>Testing</h3><p>Unit, integration and API tests run in CI before deployment.</p></div>
+        </div>
+      </section>
+
+      <section class="cs-section" id="outcomes">
+        <h2><span class="n">08</span>Outcomes</h2>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Outcomes table, scrollable">
+          <table class="outcomes">
+            <thead><tr><th scope="col">Result</th><th scope="col">What it measures</th><th scope="col">Attribution</th></tr></thead>
+            <tbody>
+              <tr><td>50K+</td><td>Transactions handled at nightly peaks</td><td>Team platform I engineered on</td></tr>
+              <tr><td>2 stacks</td><td>Old and new stacks running live together through the migration</td><td>Migration I led</td></tr>
+              <tr><td>Self-serve</td><td>Payment-run analytics available to the team without developer help</td><td>Pipeline I built</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Caveats:</strong> peak figures describe the whole platform at the time of writing.</p>
+        <h3 class="label" style="margin-top: 8px">Technology</h3>
+        <ul class="chip-list"><li class="chip">AWS Lambda</li><li class="chip">API Gateway</li><li class="chip">SQS</li><li class="chip">SNS</li><li class="chip">EventBridge</li><li class="chip">DynamoDB</li><li class="chip">Athena</li><li class="chip">Terraform</li><li class="chip">GitHub Actions</li><li class="chip">Bun</li><li class="chip">Elysia</li></ul>
+      </section>
+    </div>
+  </div>
+
+  <nav class="cs-next" aria-label="More case studies">
+    <div class="wrap">
+      <a class="next-card" href="recurring-payments.html"><span class="label">← Previous case study</span><b>Recurring payment orchestration</b></a>
+      <a class="next-card right" href="subscription-management.html"><span class="label">Next case study →</span><b>Full-stack subscription management</b></a>
+    </div>
+  </nav>
+</main>
+
+<footer class="site-footer"><div class="wrap"><span>© 2026 Srujana Patil Gowdara Suresh</span><a href="../">Home</a></div></footer>
+</body>
+</html>

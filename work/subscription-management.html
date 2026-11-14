@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Full-Stack Subscription Management · Srujana Patil</title>
+<meta name="description" content="Case study: five self-service payment flows for 50,000+ customers across four products, rebuilt end to end from TypeScript APIs and PostgreSQL to a React Router application.">
+<link rel="canonical" href="https://srujanapatiil.github.io/work/subscription-management.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Full-Stack Subscription Management · Srujana Patil">
+<meta property="og:description" content="Self-service payment control for 50,000+ customers, from database to a React Router app.">
+<meta property="og:image" content="https://srujanapatiil.github.io/assets/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#06080E">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script>document.documentElement.classList.add('js')</script>
+<script src="../assets/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../"><span class="brand-mark" aria-hidden="true">S<i>P</i></span><span class="brand-name">Srujana Patil</span><span class="visually-hidden">Srujana Patil, home</span></a>
+    <nav aria-label="Primary">
+      <ul class="nav-list">
+        <li><a href="../#about">About</a></li>
+        <li><a href="../#work" aria-current="page">Work</a></li>
+        <li><a href="../#skills">Skills</a></li>
+        <li><a href="../#experience">Experience</a></li>
+        <li><a href="../#approach">Approach</a></li>
+        <li><a href="../#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn menu-btn" id="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile" hidden>
+    <div class="wrap"><ul><li><a href="../#about">About</a></li><li><a href="../#work">Work</a></li><li><a href="../#skills">Skills</a></li><li><a href="../#experience">Experience</a></li><li><a href="../#approach">Approach</a></li><li><a href="../#contact">Contact</a></li></ul></div>
+  </nav>
+</header>
+
+<main id="main">
+  <header class="cs-hero">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Home</a><span aria-hidden="true">/</span><a href="../#work">Work</a><span aria-hidden="true">/</span><span aria-current="page">Case study 3 of 3</span></nav>
+      <p class="kicker">Case study · Full stack</p>
+      <h1>Full-stack subscription management</h1>
+      <p class="summary">Five self-service flows that let customers manage their recurring payments (list, detail, edit, pause and cancel), redesigned and rebuilt from TypeScript APIs through to a React Router application.</p>
+      <dl class="cs-meta">
+        <div><dt>Organisation</dt><dd>The Shamaazi Project Ltd, UK fintech</dd></div>
+        <div><dt>Period</dt><dd>2023 – present</dd></div>
+        <div><dt>My role</dt><dd>Full-stack engineer, database to browser</dd></div>
+        <div><dt>Scale</dt><dd>50,000+ customers across 4 products</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <div class="wrap cs-layout">
+    <aside class="toc" aria-label="On this page">
+      <p class="label">On this page</p>
+      <ol>
+        <li><a href="#context">Context and problem</a></li>
+        <li><a href="#constraints">Constraints</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#contribution">My contribution</a></li>
+        <li><a href="#decisions">Key decisions</a></li>
+        <li><a href="#implementation">Implementation</a></li>
+        <li><a href="#quality">Testing and accessibility</a></li>
+        <li><a href="#outcomes">Outcomes</a></li>
+      </ol>
+    </aside>
+
+    <div class="cs-body">
+      <section class="cs-section" id="context">
+        <h2><span class="n">01</span>Business context and problem</h2>
+        <p>Customers with recurring payments need to see what they're paying, change it, pause it and cancel it themselves. Across four products and 50,000+ customers, every request that needs support staff costs time and trust.</p>
+        <p>The aim was <strong>self-service payment control</strong>: five flows that work the same way across products and stay consistent with the scheduling system underneath.</p>
+        <span class="tbc">What the previous experience was like and why it needed redesigning (support load, inconsistent flows, an older app?).</span>
+      </section>
+
+      <section class="cs-section" id="constraints">
+        <h2><span class="n">02</span>Engineering constraints and technical challenge</h2>
+        <ul>
+          <li><strong>Correctness first:</strong> what the customer sees must match what the scheduler will charge next.</li>
+          <li><strong>Four products, one codebase:</strong> shared flows with product-specific details.</li>
+          <li><strong>Changes that touch money:</strong> edits, pauses and cancellations need clear confirmation and safe handling of repeated submissions.</li>
+          <li><strong>Accessible on any device:</strong> keyboard, screen-reader and mobile use all matter.</li>
+        </ul>
+      </section>
+
+      <section class="cs-section" id="architecture">
+        <h2><span class="n">03</span>Architecture</h2>
+        <p>A sanitised view of the layers involved, from the browser to the database.</p>
+        <figure class="diagram">
+          <div class="diagram-scroll" tabindex="0" role="region" aria-label="Architecture diagram, scrollable">
+            <svg viewBox="0 0 910 270" role="img" aria-labelledby="d3-title d3-desc">
+              <title id="d3-title">Subscription management architecture, illustrative</title>
+              <desc id="d3-desc">The customer's browser uses a React Router application running on AWS. The app calls typed schedule APIs written in TypeScript. The APIs use database services backed by PostgreSQL through Drizzle ORM, and call Stripe for payment-method changes. Playwright end-to-end tests cover the browser and app; integration tests cover the database services and PostgreSQL.</desc>
+              <defs>
+                <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0 10 5 0 10z"/></marker>
+                <marker id="a3h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow hot" d="M0 0 10 5 0 10z"/></marker>
+              </defs>
+              <g class="d-node"><rect x="20" y="70" width="150" height="58" rx="10"/><text x="36" y="95">Customer</text><text class="sub" x="36" y="114">browser · mobile</text></g>
+              <g class="d-node key"><rect x="200" y="70" width="150" height="58" rx="10"/><text x="216" y="95">React Router app</text><text class="sub" x="216" y="114">React · on AWS</text></g>
+              <g class="d-node key"><rect x="380" y="70" width="150" height="58" rx="10"/><text x="396" y="95">Schedule APIs</text><text class="sub" x="396" y="114">TypeScript · typed</text></g>
+              <g class="d-node"><rect x="560" y="70" width="150" height="58" rx="10"/><text x="576" y="95">Database services</text><text class="sub" x="576" y="114">typed queries</text></g>
+              <g class="d-node key"><rect x="740" y="70" width="150" height="58" rx="10"/><text x="756" y="95">PostgreSQL</text><text class="sub" x="756" y="114">Drizzle ORM</text></g>
+              <g class="d-node ext"><rect x="380" y="190" width="150" height="58" rx="10"/><text x="396" y="215">Stripe</text><text class="sub" x="396" y="234">payment methods</text></g>
+
+              <path class="d-edge hot" d="M170 99H200" marker-end="url(#a3h)"/>
+              <path class="d-edge hot" d="M350 99H380" marker-end="url(#a3h)"/>
+              <path class="d-edge hot" d="M530 99H560" marker-end="url(#a3h)"/>
+              <path class="d-edge hot" d="M710 99H740" marker-end="url(#a3h)"/>
+              <path class="d-edge" d="M455 128V190" marker-end="url(#a3)"/>
+
+              <path class="d-edge" d="M20 40V30H350V40"/><text class="d-label" x="130" y="22">Playwright end-to-end</text>
+              <path class="d-edge" d="M560 40V30H890V40"/><text class="d-label" x="670" y="22">integration tests</text>
+              <text class="d-label" x="380" y="160">typed API contract</text>
+            </svg>
+          </div>
+          <figcaption><span class="illustrative">Illustrative · sanitised</span><span>Brackets show where each kind of test applies</span></figcaption>
+        </figure>
+      </section>
+
+      <section class="cs-section" id="contribution">
+        <h2><span class="n">04</span>Individual contribution and collaboration</h2>
+        <div class="cols">
+          <div class="panel">
+            <h3>What I did</h3>
+            <ul>
+              <li>Redesigned and rebuilt the five schedule flows: list, detail, edit, pause and cancel.</li>
+              <li>Worked across the stack, from the TypeScript APIs to the React Router app on AWS.</li>
+              <li>Evolved the PostgreSQL data model through 17 Drizzle ORM migrations for four products.</li>
+              <li>Introduced Playwright end-to-end tests for critical customer journeys.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Who I worked with</h3>
+            <ul>
+              <li>Product and Design on the redesigned flows.</li>
+              <li>Engineers across the team through review and pairing.</li>
+            </ul>
+            <span class="tbc">Whether Design supplied the UI designs or you designed parts of it.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="cs-section" id="decisions">
+        <h2><span class="n">05</span>Key decisions and rejected alternatives</h2>
+        <div class="decision">
+          <div class="chosen"><span class="label ok">Chosen</span><p><strong>One set of flows shared by four products</strong>, built against the same schedule APIs the scheduler uses.</p></div>
+          <div><span class="label no">Rejected</span><p>A separate management screen per product. <span class="tbc">Confirm, and add why.</span></p></div>
+        </div>
+        <div class="decision">
+          <div class="chosen"><span class="label ok">Chosen</span><p><strong>Entity-based database services with typed queries</strong>, so API handlers own HTTP and access control, and data access lives in one tested layer.</p></div>
+          <div><span class="label no">Rejected</span><p>Database queries written directly inside API handlers, which spreads data rules across endpoints and is hard to test.</p></div>
+        </div>
+      </section>
+
+      <section class="cs-section" id="implementation">
+        <h2><span class="n">06</span>Implementation highlights</h2>
+        <ul>
+          <li><strong>Five flows:</strong> list, detail, edit, pause and cancel, each backed by its own API operation.</li>
+          <li><strong>Frontend:</strong> React and React Router in TypeScript, built with Vite and Tailwind CSS, and deployed on AWS.</li>
+          <li><strong>Forms and UI:</strong> React Hook Form with Zod validation, on a shared component library built with Radix UI and documented in Storybook.</li>
+          <li><strong>Data model:</strong> 17 Drizzle ORM migrations across four products, with entity-based services and targeted indexes.</li>
+          <li><strong>Payment methods:</strong> changes handled through Stripe so card details never touch the application.</li>
+        </ul>
+      </section>
+
+      <section class="cs-section" id="quality">
+        <h2><span class="n">07</span>Testing, accessibility and reliability</h2>
+        <div class="cols">
+          <div class="panel"><h3>Testing</h3><p>Playwright end-to-end tests for every critical journey, plus unit, integration and API tests in CI. Database integration tests cover the services behind each flow.</p></div>
+          <div class="panel"><h3>Accessibility</h3><p>Semantic, keyboard-accessible UI that works on mobile and desktop.</p><span class="tbc">Specific accessibility work (for example focus management in dialogs, screen-reader testing).</span></div>
+          <div class="panel"><h3>Reliability</h3><p>Customer changes go through the same schedule APIs the scheduler reads, so what customers see matches what they will be charged.</p></div>
+          <div class="panel"><h3>Security</h3><p>Customers can only see and change their own schedules; access control lives in the API layer.</p></div>
+        </div>
+      </section>
+
+      <section class="cs-section" id="outcomes">
+        <h2><span class="n">08</span>Outcomes</h2>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Outcomes table, scrollable">
+          <table class="outcomes">
+            <thead><tr><th scope="col">Result</th><th scope="col">What it measures</th><th scope="col">Attribution</th></tr></thead>
+            <tbody>
+              <tr><td>50,000+</td><td>Customers across four products with self-service payment control</td><td>Flows I built end to end</td></tr>
+              <tr><td>5</td><td>Schedule flows redesigned: list, detail, edit, pause, cancel</td><td>With Product and Design</td></tr>
+              <tr><td>17</td><td>PostgreSQL migrations shipped with Drizzle ORM</td><td>My changes to the data model</td></tr>
+              <tr><td>+20%</td><td>Seasonal payment volume after a related feature launch</td><td>Feature I delivered database to browser</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Caveats:</strong> customer numbers describe the products' reach, not usage of each flow.</p>
+        <span class="tbc">Whether the +20% seasonal launch belongs in this case study or deserves its own.</span>
+        <h3 class="label" style="margin-top: 8px">Technology</h3>
+        <ul class="chip-list"><li class="chip">React Router</li><li class="chip">React</li><li class="chip">TypeScript</li><li class="chip">PostgreSQL</li><li class="chip">Drizzle ORM</li><li class="chip">Stripe</li><li class="chip">AWS Lambda</li><li class="chip">Playwright</li></ul>
+      </section>
+    </div>
+  </div>
+
+  <nav class="cs-next" aria-label="More case studies">
+    <div class="wrap">
+      <a class="next-card" href="cloud-infrastructure.html"><span class="label">← Previous case study</span><b>Cloud-native payment infrastructure</b></a>
+      <a class="next-card right" href="../#contact"><span class="label">Get in touch →</span><b>Discuss a project</b></a>
+    </div>
+  </nav>
+</main>
+
+<footer class="site-footer"><div class="wrap"><span>© 2026 Srujana Patil Gowdara Suresh</span><a href="../">Home</a></div></footer>
+</body>
+</html>
