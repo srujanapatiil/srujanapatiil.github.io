@@ -117,9 +117,12 @@ p { margin: 0; }
 .btn:hover { color: var(--fg); border-color: var(--teal); transform: translateY(-2px); }
 .btn-primary { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 .btn-primary:hover { color: var(--bg); background: #fff; box-shadow: 0 0 0 6px rgba(238, 243, 250, .08), 0 16px 40px -12px var(--glow); }
+.btn-ghost { background: transparent; border-color: transparent; color: var(--muted); padding-inline: 14px; }
+.btn-ghost:hover { border-color: var(--line-strong); }
 .btn-small { min-height: 40px; padding: 8px 18px; font-size: 14px; }
 .btn svg { width: 16px; height: 16px; transition: transform .25s; }
 .btn:hover svg { transform: translateX(3px); }
+.btn[download]:hover svg { transform: translateY(2px); }
 
 /* ---------- Hero ---------- */
 .hero { position: relative; overflow: hidden; isolation: isolate; padding-top: clamp(120px, 14vh, 160px); padding-bottom: clamp(96px, 12vh, 128px); }

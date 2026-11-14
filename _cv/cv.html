@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Srujana Patil Gowdara Suresh</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=block">
+<style>
+  @page { size: A4; margin: 15mm 16mm 14mm; }
+  :root { --ink: #0E1726; --muted: #4A5568; --subtle: #6B778A; --accent: #0B6E62; --line: #D8DEE8; --tint: #F1F6F7; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-size: 9.6pt; line-height: 1.45; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  a { color: inherit; text-decoration: none; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
+  h1 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 31pt; line-height: 1; letter-spacing: -.01em; margin: 0; }
+  .headline { margin-top: 5px; font-size: 10.5pt; font-weight: 600; color: var(--accent); }
+  .contact { text-align: right; font-size: 8.8pt; color: var(--muted); line-height: 1.6; }
+  .contact a { color: var(--ink); }
+  .summary { margin: 11px 0 0; font-size: 9.8pt; color: #243042; }
+  h2 { font-size: 8.4pt; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 15px 0 7px; display: flex; align-items: center; gap: 10px; }
+  h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .skills { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 22px; background: var(--tint); border-radius: 6px; padding: 9px 12px; }
+  .skills div { font-size: 8.9pt; color: var(--muted); }
+  .skills b { color: var(--ink); font-weight: 600; }
+  .job { margin-top: 2px; }
+  .job + .job { margin-top: 12px; }
+  .job-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .job-head h3 { margin: 0; font-size: 11pt; font-weight: 600; }
+  .job-head .when { font-size: 8.8pt; font-weight: 500; color: var(--muted); white-space: nowrap; }
+  .org { font-size: 9.2pt; color: var(--muted); margin-top: 1px; }
+  .org b { color: var(--ink); font-weight: 600; }
+  .about { font-size: 8.9pt; font-style: italic; color: var(--subtle); margin-top: 2px; }
+  ul { margin: 6px 0 0; padding-left: 14px; display: grid; gap: 4px; }
+  li { padding-left: 2px; break-inside: avoid; }
+  li::marker { color: var(--accent); }
+  li b { font-weight: 600; }
+  .two { display: grid; grid-template-columns: 1.6fr 1fr; gap: 22px; break-inside: avoid; }
+  .edu-item { margin-bottom: 6px; }
+  .edu-item b { font-weight: 600; }
+  .edu-item span { display: block; color: var(--muted); font-size: 9pt; }
+  .page-break { break-before: page; }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Srujana Patil Gowdara Suresh</h1>
+      <div class="headline">Full-Stack Engineer | TypeScript · React · React Router · AWS</div>
+    </div>
+    <div class="contact">
+      London, UK<br>
+      <a href="mailto:srujanapatil9@gmail.com">srujanapatil9@gmail.com</a><br>
+      <a href="https://www.linkedin.com/in/srujana-patil-964b3919a">linkedin.com/in/srujana-patil-964b3919a</a><br>
+      <a href="https://srujanapatiil.github.io">srujanapatiil.github.io</a>
+    </div>
+  </header>
+
+  <p class="summary">Full-stack engineer with 7+ years of production experience since 2019, building payment-critical products at a UK fintech: recurring-payment scheduling, Stripe integrations, serverless APIs on AWS, PostgreSQL data models and React applications. Comfortable owning features from database to browser, writing tests for every critical journey, and explaining technical trade-offs clearly to Product, Design and non-technical stakeholders.</p>
+
+  <h2>Skills</h2>
+  <div class="skills">
+    <div><b>Frontend:</b> TypeScript, React, React Router, Vite, Tailwind CSS, React Hook Form, Zod, Radix UI, Storybook, accessible UI</div>
+    <div><b>Backend and APIs:</b> Node.js, Bun, Elysia, REST APIs, webhooks, microservices, idempotent payment processing</div>
+    <div><b>Serverless and cloud:</b> AWS Lambda, API Gateway, SQS, SNS, EventBridge, DynamoDB, Athena, CloudWatch, Secrets Manager, Terraform, GitHub Actions</div>
+    <div><b>Data:</b> PostgreSQL, Drizzle ORM, data modelling, safe migrations, indexing, Metabase</div>
+    <div><b>Quality and AI:</b> Playwright E2E, unit, integration and API tests; Claude Code, MCP servers, CodeRabbit, GitHub Copilot</div>
+    <div><b>Integrations:</b> Stripe, Customer.io, Mixpanel, PostHog</div>
+  </div>
+
+  <h2>Work experience</h2>
+  <div class="job">
+    <div class="job-head"><h3>Full-Stack Engineer</h3><span class="when">03/2023 – present</span></div>
+    <div class="org"><b>The Shamaazi Project Ltd</b>, London, UK</div>
+    <div class="about">UK fintech processing peaks of 50K+ subscription payments a night.</div>
+    <ul>
+      <li><b>Scaled recurring payments to 50,000+ active schedules</b> by architecting a shared scheduling system of backend microservices, supporting daily, weekly, monthly and seasonal frequencies, pauses, cancellations and payment-method changes.</li>
+      <li><b>Recovered 30% of failed payments</b> with payment-retry services for 3 subscription products, adding failure tracking and automatic cancellation after the final retry.</li>
+      <li><b>Integrated the full Stripe lifecycle:</b> Payment Intents with idempotency keys, subscriptions, signed webhooks, refunds and fees, plus automatic card updates that removed manual payment-method changes.</li>
+      <li><b>Sustained peaks of 50K+ transactions a night</b> with serverless APIs on AWS Lambda, API Gateway, SQS, SNS and EventBridge, provisioned with Terraform and deployed through GitHub Actions.</li>
+      <li><b>Led a phased migration of live services to TypeScript</b> (Bun, Elysia), keeping old and new stacks running side by side behind stable API contracts.</li>
+      <li><b>Gave 50,000+ customers across 4 products self-service payment control</b> by building 5 redesigned schedule flows (list, detail, edit, pause, cancel) in React and React Router.</li>
+      <li><b>Evolved the PostgreSQL data model through 17 Drizzle ORM migrations</b> for 4 products, introducing entity-based services, targeted indexes and database integration tests.</li>
+      <li><b>Increased seasonal payment volume by 20%</b> by delivering a feature from database to browser, turning ambiguous requirements into a production release with Product and Design.</li>
+      <li><b>Provided self-serve analytics on payment runs</b> with a data pipeline from DynamoDB to Athena and Metabase reports, keeping reporting load off production.</li>
+      <li><b>Covered every critical user journey with automated tests</b> by introducing Playwright E2E alongside unit, integration and API tests in CI.</li>
+      <li><b>Freed the Growth team from developer dependency for 69 transactional emails</b> by migrating the templates to Customer.io.</li>
+      <li><b>Accelerated delivery of production-grade code with AI coding agents</b> through Claude Code, MCP servers and CodeRabbit review, with human review of every change.</li>
+      <li><b>Raised code quality in a team of 2–4 engineers</b> by mentoring a junior developer, onboarding new engineers, and leading pairing sessions and code reviews.</li>
+    </ul>
+  </div>
+
+  <div class="job">
+    <div class="job-head"><h3>Software Engineer</h3><span class="when">09/2019 – 03/2023</span></div>
+    <div class="org"><b>DIATOZ Pvt Ltd</b>, India</div>
+    <div class="about">B2B electronic shelf-label (digital price tag) platform for supermarket chains.</div>
+    <ul>
+      <li><b>Enabled real-time price and product updates in stores</b> for chains including Lidl by developing Node.js and TypeScript REST APIs with object-oriented design.</li>
+      <li><b>Shortened release cycles</b> by automating Jenkins and GitHub Actions CI/CD pipelines with SonarQube quality gates and Bash scripting.</li>
+      <li><b>Reduced production defects</b> by writing unit tests and resolving REST API integration issues with backend engineers and QA in Agile sprints.</li>
+    </ul>
+  </div>
+
+  <h2>Education and languages</h2>
+  <div class="two">
+    <div>
+      <div class="edu-item"><b>MSc Software Engineering (Distinction)</b><span>University of West London · 2024</span></div>
+      <div class="edu-item"><b>Bachelor of Computer Science and Engineering</b><span>India · 2015 – 2019</span></div>
+    </div>
+    <div>
+      <div class="edu-item"><b>English</b><span>Fluent (C2)</span></div>
+    </div>
+  </div>
+</body>
+</html>
