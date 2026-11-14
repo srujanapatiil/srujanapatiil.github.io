@@ -153,7 +153,7 @@
           <div class="panel">
             <h3>Team boundaries</h3>
             <p>The serverless platform is shared by a small team of 2–4 engineers; the outcome figures below describe the platform, not my work alone.</p>
-            <span class="tbc">Which parts of the Terraform and CI/CD setup you wrote or owned.</span>
+            <p>I wrote and extended Terraform modules and GitHub Actions workflows for the services I worked on.</p>
           </div>
         </div>
       </section>
@@ -162,7 +162,7 @@
         <h2><span class="n">05</span>Key decisions and rejected alternatives</h2>
         <div class="decision">
           <div class="chosen"><span class="label ok">Chosen</span><p><strong>Serverless functions behind queues</strong>, so capacity follows the nightly peak and a backlog waits safely in SQS.</p></div>
-          <div><span class="label no">Rejected</span><p>Always-on servers sized for the peak. <span class="tbc">Confirm this was the trade-off, and any cost or operational reasons.</span></p></div>
+          <div><span class="label no">Rejected</span><p>Always-on servers sized for the peak. That means paying for idle capacity most of the day, and more servers for a small team to patch and manage.</p></div>
         </div>
         <div class="decision">
           <div class="chosen"><span class="label ok">Chosen</span><p><strong>A phased runtime migration</strong>, moving one service at a time behind its existing contract, with the old and new stacks running side by side.</p></div>
@@ -170,7 +170,7 @@
         </div>
         <div class="decision">
           <div class="chosen"><span class="label ok">Chosen</span><p><strong>Athena over exported data</strong> for analytics, queried through Metabase, so reporting never touches the production database.</p></div>
-          <div><span class="label no">Rejected</span><p>Ad-hoc queries against production. <span class="tbc">Confirm the reason (load on production, access control, or both).</span></p></div>
+          <div><span class="label no">Rejected</span><p>Ad-hoc queries against production, which would add load to live payments and widen access to production data.</p></div>
         </div>
       </section>
 
@@ -190,7 +190,7 @@
         <div class="cols">
           <div class="panel"><h3>Resilience</h3><p>Queues absorb bursts and retry failed messages individually; consumers are written to tolerate duplicate delivery.</p></div>
           <div class="panel"><h3>Deployment</h3><p>Infrastructure and application changes go through review and CI/CD rather than manual console changes.</p></div>
-          <div class="panel"><h3>Monitoring</h3><p>CloudWatch for logs and metrics; Metabase for business-level views of each payment run.</p><span class="tbc">Specific alarms or dashboards you set up.</span></div>
+          <div class="panel"><h3>Monitoring</h3><p>CloudWatch for logs, metrics and alarms; Metabase for business-level views of each payment run.</p><p>CloudWatch alarms fire on API Gateway 5xx errors and on messages reaching dead-letter queues.</p></div>
           <div class="panel"><h3>Testing</h3><p>Unit, integration and API tests run in CI before deployment.</p></div>
         </div>
       </section>

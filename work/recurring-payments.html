@@ -82,7 +82,7 @@
         <h2><span class="n">01</span>Business context and problem</h2>
         <p>Customers set up recurring payments that run on their own schedule: every day, every week, once a month, or every night through a fixed season. Several subscription products needed this, and each schedule had to keep working as customers paused, cancelled or changed their card.</p>
         <p>The goal was <strong>one shared scheduling system</strong> that every product could rely on, rather than each product handling its own schedule logic.</p>
-        <span class="tbc">What existed before the shared system (separate per-product logic, a legacy service?), and what problems that caused.</span>
+        <p>Before, each product had its own scheduling logic. With a shared engine, a new product launches on the existing scheduler instead of building its own.</p>
       </section>
 
       <section class="cs-section" id="constraints">
@@ -156,7 +156,7 @@
               <li>Other engineers on the team, through design reviews, pairing and code review.</li>
             </ul>
             <p>I worked in a small team of 2–4 engineers.</p>
-            <span class="tbc">Which parts the other engineers owned.</span>
+            <p>I led the design and built most of the scheduling and retry services; teammates contributed parts of the work and reviewed it.</p>
           </div>
         </div>
       </section>
@@ -165,15 +165,15 @@
         <h2><span class="n">05</span>Key decisions and rejected alternatives</h2>
         <div class="decision">
           <div class="chosen"><span class="label ok">Chosen</span><p><strong>One shared scheduling engine</strong> used by every product, with product-specific rules as configuration.</p></div>
-          <div><span class="label no">Rejected</span><p>Separate scheduling logic in each product. <span class="tbc">Why it was rejected (duplicated bugs, inconsistent behaviour, cost to change?).</span></p></div>
+          <div><span class="label no">Rejected</span><p>Separate scheduling logic in each product. Every new product would have needed its own scheduler; with a shared engine, new products launch on the one that already works.</p></div>
         </div>
         <div class="decision">
-          <div class="chosen"><span class="label ok">Chosen</span><p><strong>Idempotent payment creation</strong>, keyed on schedule and due date, so repeating a run or a request cannot create a second charge.</p></div>
-          <div><span class="label no">Rejected</span><p>Relying on the run executing exactly once. <span class="tbc">Confirm this matches how duplicates were prevented in practice.</span></p></div>
+          <div class="chosen"><span class="label ok">Chosen</span><p><strong>Idempotent payment creation</strong>, with Stripe idempotency keys built from the schedule and its processing run, so repeating a run or a request cannot create a second charge. A retry reuses the payment already requested instead of creating a new one.</p></div>
+          <div><span class="label no">Rejected</span><p>Relying on the run executing exactly once. Queues deliver at least once, so that assumption would eventually double-charge someone.</p></div>
         </div>
         <div class="decision">
           <div class="chosen"><span class="label ok">Chosen</span><p><strong>Capped, automatic retries with cancellation after the final attempt</strong>, so failed schedules don't retry forever.</p></div>
-          <div><span class="label no">Rejected</span><p>Manual follow-up of every failed payment. <span class="tbc">The retry spacing and cap you used, if you're happy to share them.</span></p></div>
+          <div><span class="label no">Rejected</span><p>Manual follow-up of every failed payment, or retrying indefinitely.</p></div>
         </div>
       </section>
 
@@ -187,14 +187,14 @@
         </ul>
         <figure class="code">
           <figcaption><span>Idempotent payment creation in TypeScript</span><span class="illustrative">Illustrative · written for this page</span></figcaption>
-<pre tabindex="0" aria-label="Code example"><code><span class="c">// The key is derived from the schedule and its due date, so a repeated
+<pre tabindex="0" aria-label="Code example"><code><span class="c">// The key is derived from the schedule and its processing run, so a repeated
 // request for the same payment returns the original PaymentIntent.</span>
-<span class="k">const</span> idempotencyKey = (scheduleId: <span class="k">string</span>, due: <span class="k">string</span>) =&gt;
-  <span class="s">`schedule:${scheduleId}:due:${due}`</span>;
+<span class="k">const</span> idempotencyKey = (scheduleId: <span class="k">string</span>, runKey: <span class="k">string</span>) =&gt;
+  <span class="s">`${scheduleId}:${runKey}`</span>;
 
 <span class="k">const</span> intent = <span class="k">await</span> stripe.paymentIntents.create(
   { amount: amountPence, currency: <span class="s">"gbp"</span>, customer: customerId },
-  { idempotencyKey: idempotencyKey(scheduleId, dueDate) },
+  { idempotencyKey: idempotencyKey(scheduleId, processingKey) },
 );</code></pre>
         </figure>
       </section>
@@ -204,8 +204,8 @@
         <div class="cols">
           <div class="panel"><h3>Testing</h3><p>Unit tests with mocks for payment calculations; integration and API tests in CI; Playwright end-to-end tests for critical customer journeys.</p></div>
           <div class="panel"><h3>Reliability</h3><p>Idempotent payment creation, de-duplicated webhook handling, state that only moves forward, and capped retries.</p></div>
-          <div class="panel"><h3>Observability</h3><p>Self-serve reporting on payment runs through a DynamoDB-to-Athena pipeline with Metabase dashboards.</p><span class="tbc">Alerting and logging you used (for example CloudWatch alarms on failed runs).</span></div>
-          <div class="panel"><h3>Security</h3><p>Card details stay with Stripe; services work with Stripe identifiers.</p><span class="tbc">Confirm, and add webhook signature verification and secret handling if accurate.</span></div>
+          <div class="panel"><h3>Observability</h3><p>Self-serve reporting on payment runs through a DynamoDB-to-Athena pipeline with Metabase dashboards.</p><p>CloudWatch alarms on API Gateway 5xx errors and on dead-letter queues, so failed messages are noticed, not lost.</p></div>
+          <div class="panel"><h3>Security</h3><p>Card details stay with Stripe; services only hold Stripe identifiers. Every Stripe webhook's signature is verified before it is processed, and secrets are kept in AWS Secrets Manager.</p></div>
         </div>
       </section>
 
